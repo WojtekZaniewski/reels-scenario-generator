@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { google } from '@ai-sdk/google';
 import { generateText } from 'ai';
-import { buildHashtagSuggestionPrompt } from '@/lib/ai/prompts';
+import { buildAccountSuggestionPrompt } from '@/lib/ai/prompts';
 import { Brief } from '@/types/brief';
-import { HashtagSuggestionResponse } from '@/lib/ai/types';
+import { AccountSuggestionResponse } from '@/lib/ai/types';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Podaj przynajmniej zabieg/usługę' }, { status: 400 });
     }
 
-    const prompt = buildHashtagSuggestionPrompt(brief);
+    const prompt = buildAccountSuggestionPrompt(brief);
 
     const { text } = await generateText({
       model: google('gemini-2.5-flash'),
@@ -27,13 +27,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Nie udało się sparsować odpowiedzi AI' }, { status: 500 });
     }
 
-    const parsed: HashtagSuggestionResponse = JSON.parse(jsonMatch[0]);
+    const parsed: AccountSuggestionResponse = JSON.parse(jsonMatch[0]);
 
     return NextResponse.json(parsed);
   } catch (error) {
-    console.error('Suggest hashtags error:', error);
+    console.error('Suggest accounts error:', error);
     return NextResponse.json(
-      { error: 'Nie udało się wygenerować hashtagów. Spróbuj ponownie.' },
+      { error: 'Nie udało się wygenerować sugestii kont. Spróbuj ponownie.' },
       { status: 500 }
     );
   }

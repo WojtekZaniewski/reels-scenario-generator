@@ -1,24 +1,23 @@
-import { HashtagSectionResponse, RawHashtagSearchResult } from './types';
+import { Instagram120ReelsResponse, Instagram120MediaResponse } from './types';
 
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY!;
-const RAPIDAPI_HOST = process.env.RAPIDAPI_HOST || 'instagram-api-fast-reliable-data-scraper.p.rapidapi.com';
+const RAPIDAPI_HOST = process.env.RAPIDAPI_HOST || 'instagram120.p.rapidapi.com';
 
 function getHeaders() {
   return {
+    'Content-Type': 'application/json',
     'X-RapidAPI-Key': RAPIDAPI_KEY,
     'X-RapidAPI-Host': RAPIDAPI_HOST,
   };
 }
 
-async function rapidApiFetch<T>(endpoint: string, params: Record<string, string>): Promise<T> {
-  const url = new URL(`https://${RAPIDAPI_HOST}${endpoint}`);
-  for (const [key, value] of Object.entries(params)) {
-    url.searchParams.set(key, value);
-  }
+async function rapidApiPost<T>(endpoint: string, body: Record<string, string>): Promise<T> {
+  const url = `https://${RAPIDAPI_HOST}${endpoint}`;
 
-  const response = await fetch(url.toString(), {
-    method: 'GET',
+  const response = await fetch(url, {
+    method: 'POST',
     headers: getHeaders(),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
@@ -29,18 +28,15 @@ async function rapidApiFetch<T>(endpoint: string, params: Record<string, string>
   return response.json();
 }
 
-export async function searchHashtag(query: string): Promise<RawHashtagSearchResult[]> {
-  const data = await rapidApiFetch<{ hashtags?: RawHashtagSearchResult[] }>(
-    '/hashtag_search',
-    { query }
-  );
-  return data.hashtags || [];
+export async function fetchUserReels(username: string): Promise<Instagram120ReelsResponse> {
+  return rapidApiPost<Instagram120ReelsResponse>('/api/instagram/reels', {
+    username,
+    maxId: '',
+  });
 }
 
-export async function getHashtagSection(hashtagName: string): Promise<HashtagSectionResponse> {
-  const data = await rapidApiFetch<HashtagSectionResponse>(
-    '/hashtag_section',
-    { hashtag: hashtagName }
-  );
-  return data;
+export async function fetchMediaByShortcode(shortcode: string): Promise<Instagram120MediaResponse> {
+  return rapidApiPost<Instagram120MediaResponse>('/api/instagram/mediaByShortcode', {
+    shortcode,
+  });
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { searchHashtag, getHashtagSection } from '@/lib/instagram/client';
-import { extractReelsFromHashtagSection } from '@/lib/instagram/transform';
+import { fetchUserReels } from '@/lib/instagram/client';
+import { extractReelsFromResponse } from '@/lib/instagram/transform';
 import { getCached, setCache, makeCacheKey } from '@/lib/cache';
 import { Reel } from '@/types/reel';
 
@@ -9,13 +9,13 @@ const MAX_REELS = parseInt(process.env.MAX_REELS_PER_SEARCH || '20', 10);
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { hashtags } = body as { hashtags: string[] };
+    const { accounts } = body as { accounts: string[] };
 
-    if (!hashtags || hashtags.length === 0) {
-      return NextResponse.json({ error: 'Podaj przynajmniej jeden hashtag' }, { status: 400 });
+    if (!accounts || accounts.length === 0) {
+      return NextResponse.json({ error: 'Podaj przynajmniej jedno konto' }, { status: 400 });
     }
 
-    const cacheKey = makeCacheKey(hashtags);
+    const cacheKey = makeCacheKey(accounts);
     const cached = getCached<Reel[]>(cacheKey);
     if (cached) {
       return NextResponse.json({ reels: cached, fromCache: true });
@@ -23,16 +23,13 @@ export async function POST(request: NextRequest) {
 
     const allReels: Reel[] = [];
 
-    for (const tag of hashtags.slice(0, 5)) {
+    for (const account of accounts.slice(0, 5)) {
       try {
-        const searchResults = await searchHashtag(tag);
-        const hashtagName = searchResults[0]?.name || tag;
-
-        const sectionData = await getHashtagSection(hashtagName);
-        const reels = extractReelsFromHashtagSection(sectionData);
+        const data = await fetchUserReels(account);
+        const reels = extractReelsFromResponse(data, account);
         allReels.push(...reels);
       } catch (err) {
-        console.error(`Error scraping hashtag "${tag}":`, err);
+        console.error(`Error scraping account "${account}":`, err);
       }
     }
 

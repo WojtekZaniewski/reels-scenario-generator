@@ -2,23 +2,23 @@
 
 import { useState, useCallback } from "react"
 import { ScenarioForm } from "@/components/scenario-form"
-import { HashtagSelector } from "@/components/hashtag-selector"
+import { AccountSelector } from "@/components/account-selector"
 import { ReelsList } from "@/components/reels-list"
 import { ScenarioResult } from "@/components/scenario-result"
 import type { Brief } from "@/types/brief"
 import type { Reel } from "@/types/reel"
 import type { ScenarioAIResponse } from "@/lib/ai/types"
 
-type Step = "brief" | "hashtags" | "results" | "scenario"
+type Step = "brief" | "accounts" | "results" | "scenario"
 
 const STEP_LABELS: Record<Step, string> = {
   brief: "Brief",
-  hashtags: "Hashtagi",
+  accounts: "Konta",
   results: "Reelsy",
   scenario: "Scenariusz",
 }
 
-const STEPS: Step[] = ["brief", "hashtags", "results", "scenario"]
+const STEPS: Step[] = ["brief", "accounts", "results", "scenario"]
 
 export default function Page() {
   const [step, setStep] = useState<Step>("brief")
@@ -31,8 +31,8 @@ export default function Page() {
     tone: "profesjonalny",
   })
 
-  const [hashtags, setHashtags] = useState<string[]>([])
-  const [hashtagReasoning, setHashtagReasoning] = useState("")
+  const [accounts, setAccounts] = useState<string[]>([])
+  const [accountReasoning, setAccountReasoning] = useState("")
 
   const [reels, setReels] = useState<Reel[]>([])
   const [selectedReelIds, setSelectedReelIds] = useState<string[]>([])
@@ -41,35 +41,35 @@ export default function Page() {
   const [rawScenarioText, setRawScenarioText] = useState("")
   const [isStreaming, setIsStreaming] = useState(false)
 
-  const suggestHashtags = useCallback(async () => {
+  const suggestAccounts = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch("/api/suggest-hashtags", {
+      const res = await fetch("/api/suggest-accounts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ brief }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      setHashtags(data.hashtags)
-      setHashtagReasoning(data.reasoning)
-      setStep("hashtags")
+      setAccounts(data.accounts)
+      setAccountReasoning(data.reasoning)
+      setStep("accounts")
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Błąd podczas generowania hashtagów")
+      setError(err instanceof Error ? err.message : "Błąd podczas generowania sugestii kont")
     } finally {
       setLoading(false)
     }
   }, [brief])
 
-  const scrapeReels = useCallback(async (selectedHashtags: string[]) => {
+  const scrapeReels = useCallback(async (selectedAccounts: string[]) => {
     setLoading(true)
     setError(null)
     try {
       const res = await fetch("/api/scrape-reels", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hashtags: selectedHashtags }),
+        body: JSON.stringify({ accounts: selectedAccounts }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -200,17 +200,17 @@ export default function Page() {
             <ScenarioForm
               brief={brief}
               onChange={setBrief}
-              onSubmit={suggestHashtags}
+              onSubmit={suggestAccounts}
               isLoading={loading}
             />
           </div>
         )}
 
-        {step === "hashtags" && (
+        {step === "accounts" && (
           <div className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6">
-            <HashtagSelector
-              hashtags={hashtags}
-              reasoning={hashtagReasoning}
+            <AccountSelector
+              accounts={accounts}
+              reasoning={accountReasoning}
               onConfirm={scrapeReels}
               onBack={() => setStep("brief")}
               isLoading={loading}
@@ -225,7 +225,7 @@ export default function Page() {
               selectedIds={selectedReelIds}
               onToggleSelect={toggleReelSelect}
               onGenerate={generateScenario}
-              onBack={() => setStep("hashtags")}
+              onBack={() => setStep("accounts")}
               isLoading={loading}
             />
           </div>

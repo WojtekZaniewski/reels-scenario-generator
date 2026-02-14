@@ -1,10 +1,10 @@
 import { Brief } from '@/types/brief';
 import { Reel } from '@/types/reel';
 
-export function buildHashtagSuggestionPrompt(brief: Brief): string {
+export function buildAccountSuggestionPrompt(brief: Brief): string {
   return `Jesteś ekspertem od Instagram Reels i marketingu w branży beauty w Polsce.
 
-Na podstawie poniższego briefu zaproponuj 8-12 hashtagów do wyszukania viralowych Reelsów na Instagramie.
+Na podstawie poniższego briefu zaproponuj 6-10 kont Instagram (username), które tworzą viralowe Reelsy w tej niszy. Szukamy kont, które mogą posłużyć jako INSPIRACJA do stworzenia scenariusza Reela.
 
 BRIEF:
 - Zabieg/usługa: ${brief.treatment}
@@ -13,15 +13,16 @@ BRIEF:
 ${brief.notes ? `- Dodatkowe notatki: ${brief.notes}` : ''}
 
 ZASADY:
-- Hashtagi powinny być MIX polskich i anglojęzycznych
-- Skup się na hashtagach, które mają dużo treści video/Reels
-- Uwzględnij zarówno szerokie hashtagi (np. #beauty) jak i niszowe (np. #mezoterapiaigłowa)
-- Nie dodawaj znaku # — podaj same nazwy
+- Podawaj PRAWDZIWE konta Instagram, które istnieją i są aktywne
+- Mix polskich i zagranicznych kont z branży beauty/kosmetycznej
+- Uwzględnij zarówno duże konta (influencerzy) jak i mniejsze salony z viralowymi treściami
+- Podaj same nazwy użytkowników BEZ znaku @
+- Skup się na kontach, które regularnie publikują Reelsy
 
 Odpowiedz WYŁĄCZNIE w formacie JSON:
 {
-  "hashtags": ["hashtag1", "hashtag2", ...],
-  "reasoning": "Krótkie wyjaśnienie dlaczego te hashtagi"
+  "accounts": ["username1", "username2", ...],
+  "reasoning": "Krótkie wyjaśnienie dlaczego te konta"
 }`;
 }
 
@@ -30,8 +31,8 @@ export function buildScenarioPrompt(brief: Brief, reels: Reel[]): string {
     .slice(0, 5)
     .map(
       (r, i) =>
-        `${i + 1}. [Viral Score: ${r.viralScore}/100 | Wyświetlenia: ${r.metrics.views.toLocaleString('pl-PL')} | Polubienia: ${r.metrics.likes.toLocaleString('pl-PL')}]
-   Opis: ${r.caption.slice(0, 300)}${r.caption.length > 300 ? '...' : ''}`
+        `${i + 1}. [@${r.ownerUsername || 'nieznany'} | Viral Score: ${r.viralScore}/100 | Wyświetlenia: ${r.metrics.views.toLocaleString('pl-PL')} | Polubienia: ${r.metrics.likes.toLocaleString('pl-PL')}]
+   ${r.caption ? `Opis: ${r.caption.slice(0, 300)}${r.caption.length > 300 ? '...' : ''}` : '(brak opisu)'}`
     )
     .join('\n\n');
 

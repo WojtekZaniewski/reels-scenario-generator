@@ -1,5 +1,5 @@
-export interface HashtagSuggestionResponse {
-  hashtags: string[];
+export interface AccountSuggestionResponse {
+  accounts: string[];
   reasoning: string;
 }
 
