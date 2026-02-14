@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const prompt = buildHashtagSuggestionPrompt(brief);
 
     const { text } = await generateText({
-      model: google('gemini-2.5-flash-preview-05-20'),
+      model: google('gemini-2.5-flash'),
       prompt,
       temperature: 0.7,
     });

@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     const prompt = buildScenarioPrompt(brief, reels);
 
     const result = streamText({
-      model: google('gemini-2.5-flash-preview-05-20'),
+      model: google('gemini-2.5-flash'),
       prompt,
       temperature: 0.8,
     });
